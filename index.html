@@ -61,17 +61,6 @@ header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-be
 .upload .msg b{color:var(--ink)}
 .upload .msg.err{color:var(--bad)}
 .upload .msg.ok b{color:var(--accent-ink)}
-.sync{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
-.sync-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;font-size:13px;color:var(--ink-2)}
-.dot{width:9px;height:9px;border-radius:50%;background:var(--ink-3);flex:none}
-.dot.on{background:var(--good)} .dot.off{background:var(--warn)} .dot.err{background:var(--bad)}
-.sync-h b{color:var(--ink)}
-.sync-form{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.sync-form input{font:inherit;font-size:13.5px;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;width:340px;max-width:100%;direction:ltr}
-.btn.sm{font-size:13px;padding:6px 12px}
-.sync ol{margin:0;padding-inline-start:20px;font-size:12.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:2px}
-.sync code{direction:ltr;unicode-bidi:embed;background:var(--surface-2);padding:0 4px;border-radius:4px;font-size:12px}
-.tgt.saving{opacity:.55}
 
 /* filters */
 .filters{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-wrap:wrap;gap:14px 20px;align-items:flex-end;box-shadow:var(--shadow)}
@@ -204,27 +193,6 @@ td.tgc{background:var(--input)}
     <button class="link" id="restore" type="button" hidden>الرجوع للبيانات الأصلية</button>
   </section>
 
-  <section class="sync" id="sync" aria-label="حفظ الأهداف للجميع">
-    <div class="sync-h">
-      <span class="dot" id="syncDot"></span>
-      <span id="syncStatus">جارٍ تحميل الأهداف المشتركة…</span>
-      <button class="link" id="syncToggle" type="button">ربط الحفظ</button>
-    </div>
-    <div id="syncPanel" hidden>
-      <div class="sync-form">
-        <input id="ghToken" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" aria-label="مفتاح الحفظ من GitHub">
-        <button class="btn sm" id="tokenSave" type="button">حفظ المفتاح</button>
-        <button class="link" id="tokenRemove" type="button">إزالة المفتاح من هذا الجهاز</button>
-      </div>
-      <ol>
-        <li>افتح <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a> (Fine-grained token).</li>
-        <li>في «Repository access» اختر <b>Only select repositories</b> ← <code>aswatkom-dashboard</code>.</li>
-        <li>في «Permissions» ← Repository ← <b>Contents: Read and write</b>. ثم Generate token.</li>
-        <li>الصق المفتاح هنا. يُحفظ في هذا المتصفح فقط، وتقدر تعطيه لأعضاء الفريق الذين تريدهم أن يعدّلوا الأهداف.</li>
-      </ol>
-    </div>
-  </section>
-
   <section class="filters" aria-label="الفلاتر">
     <div class="f grow">
       <label for="q">بحث عن بلد</label>
@@ -308,7 +276,7 @@ td.tgc{background:var(--input)}
         <tfoot id="tfoot"></tfoot>
       </table>
     </div>
-    <p class="note">«مع رقم» = من لديه رقم هاتف في حقل الهاتف (لا يشمل رقم التواصل). «اللوائح المبنية» = عدد اللوائح في فلتر «اللائحة المحلية» لكل بلد. الأهداف التي تُكتب هنا تُحفظ في ملف <code>targets.json</code> في المستودع ويراها كل من يفتح الموقع؛ إذا لم يكن لبلد هدف مشترك، يُستخدم الهدف من ملف الإكسل إن وُجد.</p>
+    <p class="note">«مع رقم» = من لديه رقم هاتف في حقل الهاتف (لا يشمل رقم التواصل). «اللوائح المبنية» = عدد اللوائح في فلتر «اللائحة المحلية» لكل بلد. الأهداف التي تكتبها هنا تُحفظ في هذا المتصفح فقط؛ الأهداف في ملف الإكسل تصل لكل من يرفع الملف.</p>
   </section>
 </div>
 <div class="tip" id="tip" hidden></div>
@@ -386,17 +354,16 @@ const ls = {get(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(
 
 // ---------- الحالة ----------
 let DATA=[], TOTAL_SUP=0, HAS_PREV=false, HAS_PHONE=false, HAS_LISTS=false;
-let SHARED = {}; // الأهداف المشتركة من targets.json
-ls.del("aswatkom-targets");
+let manualTargets = ls.get("aswatkom-targets") || {};
 const state = {q:"", towns:new Set(), regions:new Set(), size:"all", metric:"sup", sortKey:"sup", sortDir:-1};
 (()=>{ const s=ls.get("aswatkom-filters"); if(s){ state.q=s.q||""; state.regions=new Set(s.regions||[]); state.towns=new Set(s.towns||[]); state.size=s.size||"all"; state.metric=s.metric||"sup"; } })();
 const save = ()=>ls.set("aswatkom-filters",{q:state.q,regions:[...state.regions],towns:[...state.towns],size:state.size,metric:state.metric});
 
 function enrich(o){
   const d={...o};
-  const mt=SHARED[d.name];
+  const mt=manualTargets[d.name];
   d.targetEff = mt!=null ? mt : (d.target>0 ? d.target : null);
-  d.targetShared = mt!=null;
+  d.targetManual = mt!=null;
   d.rate = d.voters ? d.sup/d.voters : 0;
   d.declared = d.sup+d.con+d.hes;
   d.supPhoneRate = d.sup ? d.supPhone/d.sup : null;
@@ -609,7 +576,7 @@ function renderTable(rows){
     <td class="num ${d.inc>0?"up":"muted"}">${d.inc==null?"—":sgn(d.inc)}</td>
     <td class="num">${fmt(d.supPhone)}</td>
     <td class="num">${miniRate(d.supPhoneRate,1)}</td>
-    <td class="tgc"><input class="tgt${d.targetShared?" man":""}" type="number" min="0" step="1" inputmode="numeric" id="tgt-${d.name.replace(/\s+/g,"_")}" data-n="${esc(d.name)}" value="${d.targetEff??""}" placeholder="—" aria-label="هدف ${esc(d.name)}"></td>
+    <td class="tgc"><input class="tgt${d.targetManual?" man":""}" type="number" min="0" step="1" inputmode="numeric" id="tgt-${d.name.replace(/\s+/g,"_")}" data-n="${esc(d.name)}" value="${d.targetEff??""}" placeholder="—" aria-label="هدف ${esc(d.name)}"></td>
     <td class="num">${progPill(d.progress)}</td>
     <td class="num">${d.remaining==null?'<span class="muted">—</span>':fmt(d.remaining)}</td>
     <td class="num">${d.lists?fmt(d.lists):'<span class="muted">0</span>'}</td>
@@ -620,7 +587,12 @@ function renderTable(rows){
     : `<tr><td colspan="${COLS.length}" class="empty">لا توجد بلدات تطابق الفلاتر الحالية.</td></tr>`;
   $("tbody").querySelectorAll(".tgt").forEach(inp=>inp.addEventListener("change",()=>{
     const n=inp.dataset.n, v=inp.value.trim();
-    saveTarget(n, v===""?null:Math.max(0,Math.round(+v)), inp);
+    const base=BASE.find(b=>b.name===n);
+    if(v===""){ if(base && base.target>0) manualTargets[n]=0; else delete manualTargets[n]; }
+    else manualTargets[n]=Math.max(0,Math.round(+v));
+    if(manualTargets[n]===0 && !(base && base.target>0)) delete manualTargets[n];
+    ls.set("aswatkom-targets",manualTargets);
+    recompute(); render();
   }));
   if(!rows.length){ $("tfoot").innerHTML=""; return; }
   const V=sum(rows,"voters"),S=sum(rows,"sup"),SP=sum(rows,"supPhone"),VP=sum(rows,"votersPhone");
@@ -734,6 +706,7 @@ function handleFile(file){
       if(!res) throw lastErr;
       const now=new Date(), today=`${String(now.getDate()).padStart(2,"0")}/${String(now.getMonth()+1).padStart(2,"0")}/${now.getFullYear()}`;
       const fileHasTargets=res.rows.some(r=>r.target>0);
+      if(fileHasTargets){ manualTargets={}; ls.del("aswatkom-targets"); }
       loadData(res.rows, `المصدر: ${file.name} — ${res.date?"تحديث "+res.date:"رُفع بتاريخ "+today}`, false, true);
       let m=`<b>تم تحديث البيانات من «${esc(file.name)}»</b> — ${fmt(res.rows.length)} ${plural(res.rows.length)}، ${fmt(TOTAL_SUP)} مؤيد`;
       m+= fileHasTargets ? `، وأهداف لـ${fmt(res.rows.filter(r=>r.target>0).length)} ${plural(res.rows.filter(r=>r.target>0).length)}.` : ". عمود الهدف في الملف فارغ.";
@@ -753,104 +726,10 @@ const up=$("upload");
 up.addEventListener("drop",e=>handleFile(e.dataTransfer.files[0]));
 $("restore").addEventListener("click",()=>{ loadData(ORIGINAL_ROWS, ORIGINAL_SRC, true, false); setMsg("<b>رجعت البيانات الأصلية.</b>","ok"); });
 
-// ---------- الأهداف المشتركة (targets.json في GitHub) ----------
-const GH = {owner:"ahmad-sarsor", repo:"aswatkom-dashboard", path:"targets.json", branch:"main"};
-const API = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`;
-let token = (()=>{ try{ return localStorage.getItem("aswatkom-gh-token")||""; }catch(e){ return ""; } })();
-let lastLoad = 0;
-const b64enc = str => { const bytes=new TextEncoder().encode(str); let bin=""; bytes.forEach(b=>bin+=String.fromCharCode(b)); return btoa(bin); };
-const b64dec = b64 => new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/\n/g,"")),c=>c.charCodeAt(0)));
-function setSync(kind, html){ $("syncDot").className="dot "+kind; $("syncStatus").innerHTML=html; }
-function syncSummary(){
-  const n=Object.keys(SHARED).length;
-  const base = n ? `<b>أهداف مشتركة لـ${fmt(n)} ${plural(n)}</b> — يراها كل من يفتح الموقع.` : `<b>لا توجد أهداف مشتركة بعد.</b>`;
-  if(token) setSync("on", base+" التعديل من خانات الهدف يُحفظ للجميع.");
-  else setSync("off", base+" للتعديل من هنا اربط مفتاح الحفظ.");
-  $("syncToggle").textContent = token ? "إعدادات المفتاح" : "ربط الحفظ";
-}
-async function fetchShared(){
-  const headers={"Accept":"application/vnd.github+json"};
-  if(token) headers.Authorization="Bearer "+token;
-  try{
-    const r=await fetch(API+"?ref="+GH.branch+"&t="+Date.now(),{headers,cache:"no-store"});
-    if(r.status===404) return {targets:{}, sha:null};
-    if(!r.ok) throw new Error("api "+r.status);
-    const j=await r.json();
-    const data=JSON.parse(b64dec(j.content));
-    return {targets:data.targets||{}, sha:j.sha};
-  }catch(e){
-    // بديل: الملف المنشور مع الموقع
-    const r=await fetch("targets.json?t="+Date.now(),{cache:"no-store"});
-    if(!r.ok) throw e;
-    const data=await r.json();
-    return {targets:data.targets||{}, sha:null};
-  }
-}
-async function loadShared(){
-  try{
-    const {targets}=await fetchShared();
-    SHARED={}; Object.entries(targets).forEach(([k,v])=>{ if(v!=null && +v>0) SHARED[k]=+v; });
-    lastLoad=Date.now();
-    recompute(); render(); syncSummary();
-  }catch(e){ setSync("err","تعذّر تحميل الأهداف المشتركة. تحقق من الاتصال وأعد تحميل الصفحة."); }
-}
-async function saveTarget(name, value, inp){
-  if(!token){
-    render();
-    $("syncPanel").hidden=false;
-    setSync("off","<b>لحفظ الهدف عند الجميع اربط مفتاح الحفظ أولاً</b> (الخطوات تحت).");
-    $("ghToken").focus();
-    return;
-  }
-  if(inp){ inp.classList.add("saving"); inp.disabled=true; }
-  setSync("on","جارٍ حفظ الهدف…");
-  for(let attempt=0; attempt<2; attempt++){
-    try{
-      const cur=await fetchShared();               // أحدث نسخة لتجنّب الكتابة فوق تعديل شخص آخر
-      const targets={...cur.targets};
-      if(value==null||value===0) delete targets[name]; else targets[name]=value;
-      const sorted={}; Object.keys(targets).sort((a,b)=>a.localeCompare(b,"ar")).forEach(k=>sorted[k]=targets[k]);
-      const body={updated:new Date().toISOString(), targets:sorted};
-      const msg = value ? `هدف ${name}: ${value}` : `إزالة هدف ${name}`;
-      const r=await fetch(API,{method:"PUT",headers:{"Accept":"application/vnd.github+json","Authorization":"Bearer "+token,"Content-Type":"application/json"},
-        body:JSON.stringify({message:msg, content:b64enc(JSON.stringify(body,null,2)+"\n"), branch:GH.branch, ...(cur.sha?{sha:cur.sha}:{})})});
-      if(r.status===409 || r.status===422){ continue; }   // تعارض: أعد المحاولة مرة
-      if(r.status===401 || r.status===403){ throw new Error("المفتاح غير صالح أو ليس له صلاحية الكتابة على المستودع. أنشئ مفتاحاً جديداً بصلاحية Contents: Read and write."); }
-      if(!r.ok) throw new Error("فشل الحفظ (رمز "+r.status+").");
-      SHARED={}; Object.entries(sorted).forEach(([k,v])=>{ if(+v>0) SHARED[k]=+v; });
-      recompute(); render(); syncSummary();
-      setSync("on",`<b>تم الحفظ للجميع:</b> ${esc(msg)}.`);
-      return;
-    }catch(err){
-      render();
-      setSync("err",esc(err.message||"فشل الحفظ."));
-      return;
-    }
-  }
-  render(); setSync("err","شخص آخر عدّل الأهداف في نفس اللحظة. أعد كتابة الهدف.");
-}
-$("syncToggle").addEventListener("click",()=>{ $("syncPanel").hidden=!$("syncPanel").hidden; if(!$("syncPanel").hidden) $("ghToken").focus(); });
-$("tokenSave").addEventListener("click",async()=>{
-  const t=$("ghToken").value.trim(); if(!t) return;
-  setSync("on","جارٍ فحص المفتاح…");
-  try{
-    const r=await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}`,{headers:{"Accept":"application/vnd.github+json","Authorization":"Bearer "+t}});
-    if(!r.ok) throw 0;
-    const j=await r.json();
-    if(!(j.permissions && j.permissions.push)) { setSync("err","المفتاح يعمل لكن ليس له صلاحية الكتابة. فعّل Contents: Read and write."); return; }
-    token=t; try{ localStorage.setItem("aswatkom-gh-token",t); }catch(e){}
-    $("ghToken").value=""; $("syncPanel").hidden=true; syncSummary();
-    setSync("on","<b>تم ربط الحفظ.</b> أي هدف تكتبه الآن يُحفظ للجميع.");
-  }catch(e){ setSync("err","المفتاح غير صالح أو لا يصل إلى المستودع aswatkom-dashboard."); }
-});
-$("tokenRemove").addEventListener("click",()=>{ token=""; try{ localStorage.removeItem("aswatkom-gh-token"); }catch(e){} $("ghToken").value=""; syncSummary(); });
-document.addEventListener("visibilitychange",()=>{ if(!document.hidden && Date.now()-lastLoad>60000) loadShared(); });
-
 ls.del("aswatkom-upload"); // نسخة قديمة بشكل مختلف
 const saved=ls.get("aswatkom-upload-v2");
 if(saved && Array.isArray(saved.rows) && saved.rows.length){ loadData(saved.rows, saved.src, false, false); setMsg("<b>معروضة آخر بيانات رفعتها على هذا الجهاز.</b>","ok"); }
 else loadData(ORIGINAL_ROWS, ORIGINAL_SRC, true, false);
-loadShared();
 </script>
 </body>
 </html>
