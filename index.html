@@ -781,8 +781,8 @@ $("pdfBtn").addEventListener("click",async()=>{
     await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
     const node=document.querySelector(".wrap");
     const bg=getComputedStyle(document.body).backgroundColor;
-    const w=node.scrollWidth, h=node.scrollHeight, pad=24;
-    const canvas=await htmlToImage.toCanvas(node,{pixelRatio:2,backgroundColor:bg,width:w,height:h,fontEmbedCSS:await embedFonts(),
+    const r=node.getBoundingClientRect(), w=Math.ceil(r.width), h=Math.ceil(node.scrollHeight), pad=24;
+    const canvas=await htmlToImage.toCanvas(node,{pixelRatio:2,backgroundColor:bg,width:w,height:h,style:{margin:"0",maxWidth:"none",width:w+"px"},fontEmbedCSS:await embedFonts(),
       filter:n=>!(n.classList && (n.classList.contains("upload")||n.classList.contains("filters")||n.classList.contains("pdf-btn")))});
     const {jsPDF}=window.jspdf;
     const pw=w+pad*2, ph=h+pad*2;
