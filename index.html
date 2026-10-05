@@ -171,6 +171,29 @@ td.tgc{background:var(--input)}
   .kpi .v{font-size:20px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.head-side{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.pdf-btn{display:inline-flex;align-items:center;gap:7px;font:inherit;font-size:13.5px;font-weight:600;background:var(--surface);color:var(--accent-ink);border:1px solid var(--accent);border-radius:9px;padding:7px 14px;cursor:pointer}
+.pdf-btn:hover{background:var(--accent-soft)}
+.pdf-btn svg{width:16px;height:16px}
+@page{size:A4 landscape;margin:10mm}
+@media print{
+  :root{color-scheme:light}
+  body{background:#fff!important;padding:0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .upload,.filters,.pdf-btn,.tip{display:none!important}
+  .wrap{max-width:none;gap:12px}
+  .kpis{grid-template-columns:repeat(4,1fr)!important}
+  .grid{grid-template-columns:1.25fr 1fr!important}
+  .kpi,.reg,.row,tr,.ph{break-inside:avoid}
+  .ph{break-after:avoid}
+  .filters,.panel,.kpi{box-shadow:none!important}
+  .tw{overflow:visible!important}
+  table{min-width:0!important;font-size:10.5px!important}
+  th,td{padding:5px 4px!important} th{min-width:0!important}
+  .rate .mini{width:26px!important}
+  thead{display:table-header-group}
+  tfoot{display:table-row-group}
+  .no-print{display:none!important}
+}
 </style>
 <style>[hidden]{display:none!important} body{margin:0} img{max-width:100%}</style>
 </head>
@@ -181,7 +204,13 @@ td.tgc{background:var(--input)}
       <h1>المؤيدون حسب البلد — أصواتكم 2026</h1>
       <p class="sub" id="sub"></p>
     </div>
-    <div class="src" id="src"></div>
+    <div class="head-side">
+      <button class="pdf-btn" id="pdfBtn" type="button" title="تنزيل اللوحة كملف PDF">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0 4-4m-4 4-4-4"/><path d="M4 18v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1"/></svg>
+        تنزيل PDF
+      </button>
+      <div class="src" id="src"></div>
+    </div>
   </header>
 
   <section class="upload" id="upload" aria-label="تحديث البيانات">
@@ -266,7 +295,7 @@ td.tgc{background:var(--input)}
   </section>
 
   <section class="panel">
-    <div class="ph"><h2>جدول البلدات</h2><p>اضغط على عنوان أي عمود للترتيب</p></div>
+    <div class="ph"><h2>جدول البلدات</h2><p class="no-print">اضغط على عنوان أي عمود للترتيب</p></div>
     <div class="tw">
       <table>
         <thead><tr id="thead"></tr></thead>
@@ -713,6 +742,13 @@ function handleFile(file){
   fr.readAsArrayBuffer(file);
 }
 $("pick").addEventListener("click",()=>$("file").click());
+$("pdfBtn").addEventListener("click",()=>{
+  const old=document.title;
+  const m=($("src").textContent.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/));
+  document.title = "لوحة مؤيدي أصواتكم" + (m?` ${m[1]}-${m[2]}-${m[3]}`:"");
+  window.print();
+  setTimeout(()=>{ document.title=old; },1000);
+});
 $("file").addEventListener("change",e=>handleFile(e.target.files[0]));
 const up=$("upload");
 ["dragenter","dragover"].forEach(t=>up.addEventListener(t,e=>{e.preventDefault();up.classList.add("drag");}));
