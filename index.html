@@ -284,21 +284,23 @@ td.tgc{background:var(--input)}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 const REGIONS = {
+  north:"المثلث الشمالي",
   south:"المثلث الجنوبي",
-  north:"المثلث الشمالي ووادي عارة",
+  coast:"الساحل",
+  jer:"القدس",
   mixed:"المدن المختلطة",
-  other:"الساحل والجليل",
+  other:"الجليل",
   misc:"مناطق أخرى"
 };
 
 // قاموس أسماء البلدات: [الإنجليزية، العبرية، العربية، المنطقة]
 const TOWNS = [
-  ["KAFAR QASEM","כפר קאסם","كفر قاسم","south"],["JERUSALEM","ירושלים","القدس","mixed"],
-  ["TEL AVIV - YAFO","תל אביב -יפו","تل أبيب - يافا","mixed"],["KAFAR QARA","כפר קרע","كفر قرع","north"],
+  ["KAFAR QASEM","כפר קאסם","كفر قاسم","south"],["JERUSALEM","ירושלים","بيت صفافا","jer"],
+  ["TEL AVIV - YAFO","תל אביב -יפו","يافا","mixed"],["KAFAR QARA","כפר קרע","كفر قرع","north"],
   ["UMM AL-FAHM","אום אל-פחם","أم الفحم","north"],["TAYIBE","טייבה","الطيبة","south"],["TIRE","טירה","الطيرة","south"],
   ["JATT","ג'ת","جت","north"],["BAQA AL-GHARBIYYE","באקה אל-גרביה","باقة الغربية","north"],["RAMLA","רמלה","الرملة","mixed"],
   ["JALJULYE","ג'לג'וליה","جلجولية","south"],["LOD","לוד","اللد","mixed"],["QALANSAWE","קלנסווה","قلنسوة","south"],
-  ["MA'ALE IRON","מעלה עירון","معاليه عيرون","north"],["JISR AZ-ZARQA","ג'סר א-זרקא","جسر الزرقاء","other"],
+  ["MA'ALE IRON","מעלה עירון","معاليه عيرون","north"],["JISR AZ-ZARQA","ג'סר א-זרקא","جسر الزرقاء","coast"],
   ["AR'ARA","ערערה","عرعرة","north"],["KAFAR BARA","כפר ברא","كفر برا","south"],["BASMA","בסמ\"ה","بسمة","north"],
   ["KISRA-SUMEI","כסרא-סמיע","كسرى - سميع","other"],
   ["HAIFA","חיפה","حيفا","mixed"],["AKKO","עכו","عكا","mixed"],["NAZARETH","נצרת","الناصرة","other"],
@@ -314,6 +316,13 @@ const TOWNS = [
 ];
 const keyOf = s => String(s||"").toUpperCase().replace(/[\s\-־–'"`׳״]/g,"");
 const BY_KEY = new Map();
+// أهداف الحملة لكل بلد (ملف الأهداف، عمود «هدف» الثاني). البلدات خارج هذه القائمة لا تظهر في اللوحة.
+const TARGETS = {
+  "أم الفحم":3500, "بسمة":1400, "معاليه عيرون":1500, "عرعرة":2500, "كفر قرع":5000,
+  "باقة الغربية":4500, "جت":1500, "جسر الزرقاء":1700, "قلنسوة":4000, "الطيبة":5000,
+  "الطيرة":5000, "جلجولية":3500, "كفر برا":1350, "كفر قاسم":9500, "بيت صفافا":800,
+  "اللد":3000, "الرملة":2600, "يافا":3000
+};
 TOWNS.forEach(([en,he,ar,rg])=>{ BY_KEY.set(keyOf(en),[ar,rg,he]); BY_KEY.set(keyOf(he),[ar,rg,he]); BY_KEY.set(keyOf(ar),[ar,rg,he]); });
 
 // البيانات الأصلية — من ملف «لوحة المؤيدين» (تحديث 28/09/2026)
@@ -336,10 +345,9 @@ const ORIGINAL_ROWS = [
   ["JISR AZ-ZARQA",10382,1629,34,25,null,0,9,7,10332,34],
   ["AR'ARA",15493,595,33,26,null,0,11,11,15438,33],
   ["KAFAR BARA",2860,519,30,28,null,0,3,1,2826,30],
-  ["BASMA",8071,108,21,17,null,0,10,3,8037,21],
-  ["KISRA-SUMEI",6756,11,8,1,null,0,4,5,6739,8]
+  ["BASMA",8071,108,21,17,null,0,10,3,8037,21]
 ].map(r=>{ const [ar,rg,he]=BY_KEY.get(keyOf(r[0]));
-  return {name:ar,he,region:rg,voters:r[1],votersPhone:r[2],sup:r[3],supPhone:r[4],target:r[5],lists:r[6],con:r[7],hes:r[8],und:r[9],prev:r[10]}; });
+  return {name:ar,he,region:rg,voters:r[1],votersPhone:r[2],sup:r[3],supPhone:r[4],target:r[5]??TARGETS[ar]??null,lists:r[6],con:r[7],hes:r[8],und:r[9],prev:r[10]}; });
 const ORIGINAL_SRC = "المصدر: aswatkom.com — تحديث 28/09/2026";
 
 const nf = new Intl.NumberFormat("ar-u-nu-latn");
@@ -354,7 +362,8 @@ const ls = {get(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(
 
 // ---------- الحالة ----------
 let DATA=[], TOTAL_SUP=0, HAS_PREV=false, HAS_PHONE=false, HAS_LISTS=false;
-let manualTargets = ls.get("aswatkom-targets") || {};
+let manualTargets = ls.get("aswatkom-targets-v3") || {};
+ls.del("aswatkom-targets"); ls.del("aswatkom-upload-v2");
 const state = {q:"", towns:new Set(), regions:new Set(), size:"all", metric:"sup", sortKey:"sup", sortDir:-1};
 (()=>{ const s=ls.get("aswatkom-filters"); if(s){ state.q=s.q||""; state.regions=new Set(s.regions||[]); state.towns=new Set(s.towns||[]); state.size=s.size||"all"; state.metric=s.metric||"sup"; } })();
 const save = ()=>ls.set("aswatkom-filters",{q:state.q,regions:[...state.regions],towns:[...state.towns],size:state.size,metric:state.metric});
@@ -591,7 +600,7 @@ function renderTable(rows){
     if(v===""){ if(base && base.target>0) manualTargets[n]=0; else delete manualTargets[n]; }
     else manualTargets[n]=Math.max(0,Math.round(+v));
     if(manualTargets[n]===0 && !(base && base.target>0)) delete manualTargets[n];
-    ls.set("aswatkom-targets",manualTargets);
+    ls.set("aswatkom-targets-v3",manualTargets);
     recompute(); render();
   }));
   if(!rows.length){ $("tfoot").innerHTML=""; return; }
@@ -664,14 +673,13 @@ function parseRows(rows){
     const hit = BY_KEY.get(keyOf(raw)) || (he && BY_KEY.get(keyOf(he)));
     const voters=z(get(r,"voters")), sup=z(get(r,"sup"));
     if(!voters && !sup) continue;
-    let name, region;
-    if(hit){ name=hit[0]; region=hit[1]; }
-    else { name = /[؀-ۿ]/.test(raw) ? raw : (he||raw); region="misc"; unknown.push(name); }
+    if(!hit || !(hit[0] in TARGETS)){ unknown.push(hit?hit[0]:(/[؀-ۿ]/.test(raw)?raw:(he||raw))); continue; }
+    const name=hit[0], region=hit[1];
     const con=z(get(r,"con")), hes=z(get(r,"hes"));
     const und=c.und>=0 ? z(get(r,"und")) : Math.max(0,voters-sup-con-hes);
     const t=get(r,"target");
     out.push({name, he:he||(hit?hit[2]:""), region, voters, sup, con, hes, und,
-      votersPhone:get(r,"votersPhone"), supPhone:get(r,"supPhone"), target:t>0?t:null,
+      votersPhone:get(r,"votersPhone"), supPhone:get(r,"supPhone"), target:t>0?t:(TARGETS[name]??null),
       lists:get(r,"lists"), prev:get(r,"prev")});
   }
   if(!out.length) throw new Error("لم أجد صفوف بيانات تحت سطر العناوين.");
@@ -687,8 +695,8 @@ function loadData(rows, srcText, isOriginal, persist){
   $("sub").textContent=`المؤيدون وأرقام الهواتف واللوائح والأهداف في ${fmt(DATA.length)} ${DATA.length===1?"بلد":"بلدًا"}، مع فلاتر حسب المنطقة وحجم البلد.`;
   $("restore").hidden=isOriginal;
   buildChips(); render();
-  if(persist) ls.set("aswatkom-upload-v2",{rows,src:srcText});
-  if(isOriginal) ls.del("aswatkom-upload-v2");
+  if(persist) ls.set("aswatkom-upload-v3",{rows,src:srcText});
+  if(isOriginal) ls.del("aswatkom-upload-v3");
 }
 
 function handleFile(file){
@@ -705,12 +713,10 @@ function handleFile(file){
       }
       if(!res) throw lastErr;
       const now=new Date(), today=`${String(now.getDate()).padStart(2,"0")}/${String(now.getMonth()+1).padStart(2,"0")}/${now.getFullYear()}`;
-      const fileHasTargets=res.rows.some(r=>r.target>0);
-      if(fileHasTargets){ manualTargets={}; ls.del("aswatkom-targets"); }
       loadData(res.rows, `المصدر: ${file.name} — ${res.date?"تحديث "+res.date:"رُفع بتاريخ "+today}`, false, true);
       let m=`<b>تم تحديث البيانات من «${esc(file.name)}»</b> — ${fmt(res.rows.length)} ${plural(res.rows.length)}، ${fmt(TOTAL_SUP)} مؤيد`;
-      m+= fileHasTargets ? `، وأهداف لـ${fmt(res.rows.filter(r=>r.target>0).length)} ${plural(res.rows.filter(r=>r.target>0).length)}.` : ". عمود الهدف في الملف فارغ.";
-      if(res.unknown.length) m+=` بلدات غير معروفة لي وُضعت في «مناطق أخرى»: ${res.unknown.map(esc).join("، ")}.`;
+      m+=".";
+      if(res.unknown.length) m+=` بلدات ليست في قائمة الأهداف ولم تُعرض: ${res.unknown.map(esc).join("، ")}.`;
       setMsg(m,"ok");
     }catch(err){ setMsg(esc((err&&err.message)||"تعذّرت قراءة الملف."),"err"); }
     $("file").value="";
@@ -727,7 +733,7 @@ up.addEventListener("drop",e=>handleFile(e.dataTransfer.files[0]));
 $("restore").addEventListener("click",()=>{ loadData(ORIGINAL_ROWS, ORIGINAL_SRC, true, false); setMsg("<b>رجعت البيانات الأصلية.</b>","ok"); });
 
 ls.del("aswatkom-upload"); // نسخة قديمة بشكل مختلف
-const saved=ls.get("aswatkom-upload-v2");
+const saved=ls.get("aswatkom-upload-v3");
 if(saved && Array.isArray(saved.rows) && saved.rows.length){ loadData(saved.rows, saved.src, false, false); setMsg("<b>معروضة آخر بيانات رفعتها على هذا الجهاز.</b>","ok"); }
 else loadData(ORIGINAL_ROWS, ORIGINAL_SRC, true, false);
 </script>
