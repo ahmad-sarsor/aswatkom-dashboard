@@ -121,6 +121,55 @@ input:focus-visible,select:focus-visible,button:focus-visible,th:focus-visible{o
 .gt{height:14px;background:var(--track);border-radius:3px;position:relative;overflow:visible}
 .gt .b{position:absolute;inset-block:0;right:0;background:var(--accent);border-radius:3px}
 .gt .b.done{background:var(--good)}
+.gt .exp{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);border-radius:2px;opacity:.75}
+/* ---------- plan grading ---------- */
+:root{--gA:#15803d;--gA-soft:#dcfce7;--gB:#b45309;--gB-soft:#fef3c7;--gC:#b91c1c;--gC-soft:#fee2e2}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--gA:#4ade80;--gA-soft:#14301f;--gB:#fbbf24;--gB-soft:#3a2c0f;--gC:#f87171;--gC-soft:#3d1717}}
+:root[data-theme="dark"]{--gA:#4ade80;--gA-soft:#14301f;--gB:#fbbf24;--gB-soft:#3a2c0f;--gC:#f87171;--gC-soft:#3d1717}
+.plan-inputs{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-end;background:var(--surface-2);border-radius:12px;padding:12px 14px}
+.plan-inputs .f{display:flex;flex-direction:column;gap:5px}
+.plan-inputs label{font-size:12px;color:var(--ink-3);font-weight:600}
+.plan-inputs input{font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-variant-numeric:tabular-nums}
+.plan-inputs input[type=number]{width:90px}
+.plan-inputs .today{font-size:13px;color:var(--ink-2);padding-bottom:7px}
+.plan-inputs .today b{color:var(--ink)}
+.plan-inputs .link{margin-inline-start:auto;padding-bottom:7px}
+.timeline{position:relative;padding:28px 6px 22px}
+.tl-track{height:10px;border-radius:6px;background:var(--track);position:relative;overflow:visible}
+.tl-fill{position:absolute;inset-block:0;right:0;border-radius:6px;background:linear-gradient(270deg,color-mix(in srgb,var(--accent) 35%,transparent),var(--accent))}
+.tl-dot{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;background:var(--surface);border:4px solid var(--accent);transform:translate(50%,-50%);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 18%,transparent)}
+.tl-lbl{position:absolute;font-size:12px;color:var(--ink-3);white-space:nowrap;transform:translateX(50%)}
+.tl-lbl.top{top:0;font-weight:700;color:var(--ink);font-size:13px}
+.tl-lbl.bot{bottom:0}
+.tl-lbl.end{transform:none;left:0} .tl-lbl.start{transform:none;right:0}
+.grades{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.gcard{position:relative;border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;cursor:pointer;background:var(--surface);text-align:start;font:inherit;color:inherit;overflow:hidden;transition:transform .15s,box-shadow .15s,border-color .15s}
+.gcard::after{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--gc)}
+.gcard:hover{transform:translateY(-2px);box-shadow:0 8px 24px -14px var(--gc)}
+.gcard[aria-pressed="true"]{border-color:var(--gc);box-shadow:0 0 0 2px var(--gc) inset}
+.gcard.A{--gc:var(--gA);--gs:var(--gA-soft)} .gcard.B{--gc:var(--gB);--gs:var(--gB-soft)} .gcard.C{--gc:var(--gC);--gs:var(--gC-soft)}
+.gtop{display:flex;align-items:center;gap:12px}
+.gletter{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-family:"Noto Kufi Arabic",sans-serif;font-weight:800;font-size:24px;color:var(--gc);background:var(--gs);flex:none;letter-spacing:0;direction:ltr}
+.gtitle{display:flex;flex-direction:column;gap:0}
+.gtitle b{font-size:15px}
+.gtitle span{font-size:12px;color:var(--ink-3)}
+.gcount{margin-inline-start:auto;font-family:"Noto Kufi Arabic",sans-serif;font-size:28px;font-weight:800;color:var(--gc);line-height:1}
+.gtowns{display:flex;flex-wrap:wrap;gap:5px}
+.gtowns span{font-size:12px;padding:2px 8px;border-radius:999px;background:var(--gs);color:var(--gc);font-weight:600}
+.gmeta{font-size:12px;color:var(--ink-3)}
+.grade{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;font-family:"Noto Kufi Arabic",sans-serif;font-weight:800;font-size:14px;direction:ltr}
+.grade.A{color:var(--gA);background:var(--gA-soft);box-shadow:inset 0 0 0 1.5px var(--gA)}
+.grade.B{color:var(--gB);background:var(--gB-soft);box-shadow:inset 0 0 0 1.5px var(--gB)}
+.grade.C{color:var(--gC);background:var(--gC-soft);box-shadow:inset 0 0 0 1.5px var(--gC)}
+.pace{display:inline-flex;align-items:center;gap:7px}
+.pace .pt{position:relative;width:64px;height:8px;border-radius:4px;background:var(--track)}
+.pace .pt i{position:absolute;inset-block:0;right:0;border-radius:4px}
+.pace .pt em{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.7}
+tr.rowC td:first-child{box-shadow:inset -4px 0 0 var(--gC)}
+tr.rowB td:first-child{box-shadow:inset -4px 0 0 var(--gB)}
+tr.rowA td:first-child{box-shadow:inset -4px 0 0 var(--gA)}
+th.gr{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+@media (max-width:760px){.grades{grid-template-columns:1fr}}
 .gstat{font-size:12.5px;color:var(--ink-2);text-align:left;direction:ltr;white-space:nowrap}
 .gstat b{color:var(--ink)}
 .goal-empty{background:var(--input);border:1px solid var(--input-line);border-radius:10px;padding:14px;font-size:13.5px;color:var(--ink-2)}
@@ -302,6 +351,19 @@ body.exporting .rate .mini{width:30px!important}
     </div>
   </section>
 
+  <section class="panel" id="planPanel">
+    <div class="ph"><h2>التدريج حسب الخطة</h2><p id="planNote"></p></div>
+    <div class="plan-inputs no-print">
+      <div class="f"><label for="planPct">الهدف المرحلي (% من الهدف)</label><input id="planPct" type="number" min="1" max="100" step="1" value="60"></div>
+      <div class="f"><label for="planDue">حتى تاريخ</label><input id="planDue" type="date" value="2026-10-12"></div>
+      <div class="f"><label for="planStart">بداية الحساب</label><input id="planStart" type="date" value="2026-09-28"></div>
+      <span class="today" id="planToday"></span>
+      <button class="link" id="planReset" type="button">القيم الافتراضية</button>
+    </div>
+    <div class="timeline" id="timeline"></div>
+    <div class="grades" id="grades"></div>
+  </section>
+
   <section class="panel">
     <div class="ph"><h2>جدول البلدات</h2><p class="no-print">اضغط على عنوان أي عمود للترتيب</p></div>
     <div class="tw">
@@ -398,7 +460,7 @@ const ls = {get(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(
 // ---------- الحالة ----------
 let DATA=[], TOTAL_SUP=0, HAS_PREV=false, HAS_PHONE=false, HAS_LISTS=false;
 ls.del("aswatkom-targets-v3"); ls.del("aswatkom-targets"); ls.del("aswatkom-upload-v2");
-const state = {q:"", towns:new Set(), regions:new Set(), size:"all", metric:"sup", sortKey:"sup", sortDir:-1};
+const state = {q:"", towns:new Set(), regions:new Set(), grade:new Set(), size:"all", metric:"sup", sortKey:"paceRatio", sortDir:1};
 (()=>{ const s=ls.get("aswatkom-filters"); if(s){ state.q=s.q||""; state.regions=new Set(s.regions||[]); state.towns=new Set(s.towns||[]); state.size=s.size||"all"; state.metric=s.metric||"sup"; } })();
 const save = ()=>ls.set("aswatkom-filters",{q:state.q,regions:[...state.regions],towns:[...state.towns],size:state.size,metric:state.metric});
 
@@ -449,6 +511,7 @@ function passesOther(d){
   const raw=state.q.trim(), q=norm(raw);
   if(q && !norm(d.name).includes(q) && !(d.he||"").includes(raw)) return false;
   if(state.regions.size && !state.regions.has(d.region)) return false;
+  if(state.grade && state.grade.size && !state.grade.has(d.grade)) return false;
   if(state.size==="s" && d.voters>=10000) return false;
   if(state.size==="m" && (d.voters<10000||d.voters>30000)) return false;
   if(state.size==="l" && d.voters<=30000) return false;
@@ -542,7 +605,7 @@ function renderGoals(rows){
   withT.sort((a,b)=>b.progress-a.progress).forEach(d=>{
     const r=document.createElement("div"); r.className="row grow-row";
     const p=d.progress, done=p>=1;
-    r.innerHTML=`<span class="n" title="${esc(d.name)}">${esc(d.name)}</span><span class="gt"><span class="b${done?" done":""}" style="width:${Math.min(1,p)*100}%"></span></span><span class="gstat num"><b>${pct(p,0)}</b> · ${fmt(d.sup)}/${fmt(d.targetEff)}</span>`;
+    r.innerHTML=`<span class="n" title="${esc(d.name)}">${esc(d.name)}</span><span class="gt"><span class="b${done?" done":""}" style="width:${Math.min(1,p)*100}%"></span>${d.expPct?`<span class="exp" style="right:${Math.min(1,d.expPct)*100}%" title="المطلوب اليوم ${pct(d.expPct,0)}"></span>`:""}</span><span class="gstat num"><b>${pct(p,0)}</b> · ${fmt(d.sup)}/${fmt(d.targetEff)}</span>`;
     bindTip(r,d); box.appendChild(r);
   });
 }
@@ -575,9 +638,79 @@ function renderRegions(rows){
     : '<div class="empty">لا توجد بيانات.</div>';
 }
 
+// ---------- التدريج حسب الخطة ----------
+const PLAN_DEFAULT={pct:60, due:"2026-10-12", start:"2026-09-28"};
+const PLAN={...PLAN_DEFAULT};
+const GRADE_B=0.70;           // B: من 70% إلى أقل من 100% من المطلوب اليوم · أقل من ذلك = C
+const GRADES={A:{t:"على الخطة",d:"وصل المطلوب اليوم أو أكثر"},B:{t:"قريب من الخطة",d:"بين 70% و100% من المطلوب"},C:{t:"خطر",d:"أقل من 70% من المطلوب"}};
+const dayMs=864e5;
+const parseD = s => { const [y,m,d]=String(s).split("-").map(Number); return new Date(y,(m||1)-1,d||1); };
+const fmtD = dt => `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}`;
+function todayD(){ const t=new Date(); return new Date(t.getFullYear(),t.getMonth(),t.getDate()); }
+function planInfo(){
+  const start=parseD(PLAN.start), due=parseD(PLAN.due), today=todayD();
+  const total=Math.max(1,Math.round((due-start)/dayMs));
+  const elapsed=Math.round((today-start)/dayMs);
+  const frac=Math.min(1,Math.max(0,elapsed/total));
+  const daysLeft=Math.max(0,Math.round((due-today)/dayMs));
+  return {start,due,today,total,elapsed,frac,daysLeft,expected:PLAN.pct/100*frac,milestone:PLAN.pct/100};
+}
+function applyPlan(){
+  const P=planInfo();
+  DATA.forEach(d=>{
+    if(!d.targetEff){ d.grade=null; d.expPct=null; d.expSup=null; d.gap=null; d.paceRatio=null; d.perDay=null; return; }
+    d.expPct=P.expected; d.expSup=Math.ceil(P.expected*d.targetEff);
+    d.gap=Math.max(0,d.expSup-d.sup);
+    d.paceRatio = P.expected>0 ? d.progress/P.expected : Infinity;
+    d.grade = d.paceRatio>=1 ? "A" : d.paceRatio>=GRADE_B ? "B" : "C";
+    const toMilestone=Math.max(0,Math.ceil(P.milestone*d.targetEff)-d.sup);
+    d.perDay = P.daysLeft>0 ? Math.ceil(toMilestone/P.daysLeft) : (toMilestone?toMilestone:0);
+    d.gradeRank = {A:0,B:1,C:2}[d.grade];
+  });
+  return P;
+}
+function renderPlan(rows,P){
+  $("planToday").innerHTML=`اليوم <b>${fmtD(P.today)}</b> · المطلوب اليوم <b>${pct(P.expected,1)}</b> من الهدف`;
+  $("planNote").textContent=`${PLAN.pct}% من الهدف حتى ${fmtD(P.due)} · ${P.daysLeft>0?`بقي ${P.daysLeft} ${P.daysLeft===1?"يوم":P.daysLeft===2?"يومان":P.daysLeft<=10?"أيام":"يومًا"}`:"انتهت المرحلة"}`;
+  // timeline
+  const x=P.frac*100;
+  $("timeline").innerHTML=`
+    <span class="tl-lbl top" style="right:${x}%">اليوم ${fmtD(P.today)} · ${pct(P.expected,1)}</span>
+    <div class="tl-track"><div class="tl-fill" style="width:${x}%"></div><span class="tl-dot" style="right:${x}%"></span></div>
+    <span class="tl-lbl bot start">${fmtD(P.start)} · 0%</span>
+    <span class="tl-lbl bot end">${fmtD(P.due)} · ${PLAN.pct}%</span>`;
+  // grade cards
+  const withT=rows.filter(d=>d.grade);
+  $("grades").innerHTML=["A","B","C"].map(g=>{
+    const list=withT.filter(d=>d.grade===g).sort((a,b)=>b.paceRatio-a.paceRatio);
+    const gap=list.reduce((a,d)=>a+d.gap,0);
+    return `<button type="button" class="gcard ${g}" data-g="${g}" aria-pressed="${state.grade.has(g)}">
+      <div class="gtop"><span class="gletter">${g}</span><span class="gtitle"><b>${GRADES[g].t}</b><span>${GRADES[g].d}</span></span><span class="gcount num">${list.length}</span></div>
+      <div class="gtowns">${list.length?list.map(d=>`<span>${esc(d.name)}</span>`).join(""):'<span style="background:none;color:var(--ink-3);font-weight:400">لا يوجد</span>'}</div>
+      ${g!=="A"&&list.length?`<div class="gmeta num">ينقص هذه البلدات ${fmt(gap)} مؤيدًا للحاق بالخطة اليوم</div>`:""}
+    </button>`;}).join("");
+  $("grades").querySelectorAll(".gcard").forEach(b=>b.addEventListener("click",()=>{ const g=b.dataset.g; state.grade.has(g)?state.grade.delete(g):state.grade.add(g); render(); }));
+}
+["planPct","planDue","planStart"].forEach(id=>$(id).addEventListener("change",()=>{
+  const v=+$("planPct").value; PLAN.pct=Math.min(100,Math.max(1,isFinite(v)&&v>0?v:PLAN_DEFAULT.pct));
+  if($("planDue").value) PLAN.due=$("planDue").value;
+  if($("planStart").value) PLAN.start=$("planStart").value;
+  if(parseD(PLAN.due)<=parseD(PLAN.start)){ PLAN.start=PLAN_DEFAULT.start; PLAN.due=PLAN_DEFAULT.due; }
+  render();
+}));
+$("planReset").addEventListener("click",()=>{ Object.assign(PLAN,PLAN_DEFAULT); render(); });
+const gradeCell=d=> d.grade?`<span class="grade ${d.grade}" title="${GRADES[d.grade].t}">${d.grade}</span>`:'<span class="muted">—</span>';
+const paceCell=d=>{
+  if(!d.grade) return '<span class="muted">—</span>';
+  const col={A:"var(--gA)",B:"var(--gB)",C:"var(--gC)"}[d.grade];
+  const scale=Math.max(d.expPct*1.25,d.progress,0.0001);
+  return `<span class="pace"><span class="pt"><i style="width:${Math.min(1,d.progress/scale)*100}%;background:${col}"></i><em style="right:${d.expPct/scale*100}%"></em></span>${isFinite(d.paceRatio)?pct(d.paceRatio,0):"—"}</span>`;
+};
+
 // ---------- table ----------
 const COLS=[
   {k:"name",t:"البلد",str:true},
+  {k:"gradeRank",t:"الدرجة",cls:"gr"},
   {k:"region",t:"المنطقة",str:true},
   {k:"voters",t:"عدد الناخبين"},
   {k:"votersPhoneRate",t:"% ناخبين مع رقم"},
@@ -587,6 +720,10 @@ const COLS=[
   {k:"supPhoneRate",t:"% مؤيدين مع رقم"},
   {k:"targetEff",t:"الهدف",cls:"tg"},
   {k:"progress",t:"الإنجاز من الهدف"},
+  {k:"paceRatio",t:"من المطلوب اليوم",cls:"gr"},
+  {k:"expSup",t:"المطلوب اليوم",cls:"gr"},
+  {k:"gap",t:"الفجوة عن الخطة",cls:"gr"},
+  {k:"perDay",t:"المطلوب يوميًا حتى الموعد",cls:"gr"},
   {k:"remaining",t:"المتبقي للهدف"},
   {k:"lists",t:"اللوائح المبنية"},
   {k:"rate",t:"نسبة التأييد"},
@@ -610,8 +747,9 @@ function renderTable(rows){
     if(x==null&&y==null) return 0; if(x==null) return 1; if(y==null) return -1; return dir*(x-y);});
   $("thead").querySelectorAll("th").forEach(th=>th.setAttribute("aria-sort", th.dataset.k===k?(dir>0?"ascending":"descending"):"none"));
   const maxRate=Math.max(...DATA.map(d=>d.rate)), maxVP=Math.max(...DATA.map(d=>d.votersPhoneRate||0));
-  $("tbody").innerHTML = sorted.length ? sorted.map(d=>`<tr>
+  $("tbody").innerHTML = sorted.length ? sorted.map(d=>`<tr class="${d.grade?"row"+d.grade:""}">
     <td><strong>${esc(d.name)}</strong></td>
+    <td>${gradeCell(d)}</td>
     <td><span class="pill">${REGIONS[d.region]}</span></td>
     <td class="num">${fmt(d.voters)}</td>
     <td class="num">${miniRate(d.votersPhoneRate,maxVP)}</td>
@@ -621,6 +759,10 @@ function renderTable(rows){
     <td class="num">${miniRate(d.supPhoneRate,1)}</td>
     <td class="tgc num"><strong>${d.targetEff==null?'<span class="muted">—</span>':fmt(d.targetEff)}</strong></td>
     <td class="num">${progPill(d.progress)}</td>
+    <td class="num">${paceCell(d)}</td>
+    <td class="num">${d.expSup==null?'<span class="muted">—</span>':fmt(d.expSup)}</td>
+    <td class="num">${d.gap==null?'<span class="muted">—</span>':d.gap?`<strong style="color:var(--g${d.grade})">${fmt(d.gap)}</strong>`:'<span style="color:var(--gA)">✓</span>'}</td>
+    <td class="num">${d.perDay==null?'<span class="muted">—</span>':fmt(d.perDay)}</td>
     <td class="num">${d.remaining==null?'<span class="muted">—</span>':fmt(d.remaining)}</td>
     <td class="num">${d.lists?fmt(d.lists):'<span class="muted">0</span>'}</td>
     <td class="num">${miniRate(d.rate,maxRate,2)}</td>
@@ -631,7 +773,9 @@ function renderTable(rows){
   if(!rows.length){ $("tfoot").innerHTML=""; return; }
   const V=sum(rows,"voters"),S=sum(rows,"sup"),SP=sum(rows,"supPhone"),VP=sum(rows,"votersPhone");
   const withT=rows.filter(d=>d.targetEff),T=sum(withT,"targetEff"),ST=sum(withT,"sup");
-  $("tfoot").innerHTML=`<tr><td>المجموع</td><td></td><td class="num">${fmt(V)}</td><td class="num">${pct(V?VP/V:0)}</td><td class="num">${fmt(S)}</td><td class="num">${HAS_PREV?sgn(sum(rows,"inc")):"—"}</td><td class="num">${fmt(SP)}</td><td class="num">${pct(S?SP/S:0,0)}</td><td class="num tgc">${T?fmt(T):"—"}</td><td class="num">${T?progPill(ST/T):"—"}</td><td class="num">${T?fmt(sum(withT,"remaining")):"—"}</td><td class="num">${fmt(sum(rows,"lists"))}</td><td class="num">${pct(V?S/V:0,2)}</td><td class="num">${fmt(sum(rows,"hes"))}</td><td class="num">${fmt(sum(rows,"con"))}</td><td class="num">${fmt(sum(rows,"und"))}</td></tr>`;
+  const P=planInfo(), expT=Math.ceil(P.expected*T), gapT=withT.reduce((a,d)=>a+(d.gap||0),0), perT=withT.reduce((a,d)=>a+(d.perDay||0),0), ratioT=P.expected>0&&T?(ST/T)/P.expected:null;
+  const gT= ratioT==null?null: ratioT>=1?"A":ratioT>=GRADE_B?"B":"C";
+  $("tfoot").innerHTML=`<tr><td>المجموع</td><td>${gT?`<span class="grade ${gT}">${gT}</span>`:""}</td><td></td><td class="num">${fmt(V)}</td><td class="num">${pct(V?VP/V:0)}</td><td class="num">${fmt(S)}</td><td class="num">${HAS_PREV?sgn(sum(rows,"inc")):"—"}</td><td class="num">${fmt(SP)}</td><td class="num">${pct(S?SP/S:0,0)}</td><td class="num tgc">${T?fmt(T):"—"}</td><td class="num">${T?progPill(ST/T):"—"}</td><td class="num">${ratioT==null?"—":pct(ratioT,0)}</td><td class="num">${T?fmt(expT):"—"}</td><td class="num">${T?fmt(gapT):"—"}</td><td class="num">${T?fmt(perT):"—"}</td><td class="num">${T?fmt(sum(withT,"remaining")):"—"}</td><td class="num">${fmt(sum(rows,"lists"))}</td><td class="num">${pct(V?S/V:0,2)}</td><td class="num">${fmt(sum(rows,"hes"))}</td><td class="num">${fmt(sum(rows,"con"))}</td><td class="num">${fmt(sum(rows,"und"))}</td></tr>`;
 }
 
 // ---------- render ----------
@@ -645,14 +789,16 @@ function render(){
   $("townCount").textContent = state.towns.size ? `تم اختيار ${state.towns.size} من ${DATA.length}` : "كل البلدات معروضة";
   $("townsClear").hidden = !state.towns.size;
   $("q").value=state.q; $("size").value=state.size; $("metric").value=state.metric;
+  const P=applyPlan();
+  $("planPct").value=PLAN.pct; $("planDue").value=PLAN.due; $("planStart").value=PLAN.start;
   const rows=filtered();
-  renderKPIs(rows); renderBars(rows); renderGoals(rows); renderStance(rows); renderRegions(rows); renderTable(rows);
+  renderKPIs(rows); renderBars(rows); renderGoals(rows); renderStance(rows); renderRegions(rows); renderPlan((()=>{ const g=state.grade; state.grade=new Set(); const r=filtered(); state.grade=g; return r; })(),P); renderTable(rows);
   save();
 }
 $("q").addEventListener("input",e=>{state.q=e.target.value;render();});
 $("size").addEventListener("change",e=>{state.size=e.target.value;render();});
 $("metric").addEventListener("change",e=>{state.metric=e.target.value;render();});
-$("reset").addEventListener("click",()=>{state.q="";state.towns.clear();state.regions.clear();state.size="all";state.metric="sup";render();});
+$("reset").addEventListener("click",()=>{state.q="";state.towns.clear();state.regions.clear();state.grade.clear();state.size="all";state.metric="sup";render();});
 
 // ---------- رفع ملف إكسل ----------
 const upMsg=$("upMsg");
