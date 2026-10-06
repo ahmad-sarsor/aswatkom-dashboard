@@ -370,7 +370,7 @@ body.exporting .rate .mini{width:30px!important}
     <div class="plan-inputs no-print">
       <div class="f"><label for="planPct">الهدف المرحلي (% من الهدف)</label><input id="planPct" type="number" min="1" max="100" step="1" value="60"></div>
       <div class="f"><label for="planDue">حتى تاريخ</label><input id="planDue" type="date" value="2026-10-12"></div>
-      <div class="f"><label for="planStart">بداية الحساب</label><input id="planStart" type="date" value="2026-09-28"></div>
+      <div class="f"><label for="planStart">بداية الحساب</label><input id="planStart" type="date" value="2026-10-01"></div>
       <span class="today" id="planToday"></span>
       <button class="link" id="planReset" type="button">القيم الافتراضية</button>
     </div>
@@ -666,10 +666,10 @@ function renderRegions(rows){
 }
 
 // ---------- التدريج حسب الخطة ----------
-const PLAN_DEFAULT={pct:60, due:"2026-10-12", start:"2026-09-28"};
+const PLAN_DEFAULT={pct:60, due:"2026-10-12", start:"2026-10-01"};
 const PLAN={...PLAN_DEFAULT};
-const GRADE_B=0.70;           // B: من 70% إلى أقل من 100% من المطلوب اليوم · أقل من ذلك = C
-const GRADES={A:{t:"على الخطة",d:"وصل المطلوب اليوم أو أكثر"},B:{t:"قريب من الخطة",d:"بين 70% و100% من المطلوب"},C:{t:"خطر",d:"أقل من 70% من المطلوب"}};
+const GRADE_C=0.25, GRADE_B=0.40;   // من المطلوب اليوم: ≤25% = C · حتى 40% = B · أكثر من 40% = A
+const GRADES={A:{t:"جيد",d:"أكثر من 40% مما يجب اليوم"},B:{t:"متوسط",d:"من 25% إلى 40% مما يجب اليوم"},C:{t:"خطر",d:"25% أو أقل مما يجب اليوم"}};
 const dayMs=864e5;
 const parseD = s => { const [y,m,d]=String(s).split("-").map(Number); return new Date(y,(m||1)-1,d||1); };
 const fmtD = dt => `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}`;
@@ -689,7 +689,7 @@ function applyPlan(){
     d.expPct=P.expected; d.expSup=Math.ceil(P.expected*d.targetEff);
     d.gap=Math.max(0,d.expSup-d.sup);
     d.paceRatio = P.expected>0 ? d.progress/P.expected : Infinity;
-    d.grade = d.paceRatio>=1 ? "A" : d.paceRatio>=GRADE_B ? "B" : "C";
+    d.grade = d.paceRatio>GRADE_B ? "A" : d.paceRatio>GRADE_C ? "B" : "C";
     const toMilestone=Math.max(0,Math.ceil(P.milestone*d.targetEff)-d.sup);
     d.perDay = P.daysLeft>0 ? Math.ceil(toMilestone/P.daysLeft) : (toMilestone?toMilestone:0);
     d.gradeRank = {A:0,B:1,C:2}[d.grade];
@@ -714,7 +714,7 @@ function renderPlan(rows,P){
     return `<button type="button" class="gcard ${g}" data-g="${g}" aria-pressed="${state.grade.has(g)}">
       <div class="gtop"><span class="gletter">${g}</span><span class="gtitle"><b>${GRADES[g].t}</b><span>${GRADES[g].d}</span></span><span class="gcount num">${list.length}</span></div>
       <div class="gtowns">${list.length?list.map(d=>`<span>${esc(d.name)}</span>`).join(""):'<span style="background:none;color:var(--ink-3);font-weight:400">لا يوجد</span>'}</div>
-      ${g!=="A"&&list.length?`<div class="gmeta num">ينقص هذه البلدات ${fmt(gap)} مؤيدًا للحاق بالخطة اليوم</div>`:""}
+      ${gap>0?`<div class="gmeta num">ينقص هذه البلدات ${fmt(gap)} مؤيدًا للحاق بالخطة اليوم</div>`:""}
     </button>`;}).join("");
   $("grades").querySelectorAll(".gcard").forEach(b=>b.addEventListener("click",()=>{ const g=b.dataset.g; state.grade.has(g)?state.grade.delete(g):state.grade.add(g); render(); }));
 }
@@ -801,7 +801,7 @@ function renderTable(rows){
   const V=sum(rows,"voters"),S=sum(rows,"sup"),SP=sum(rows,"supPhone"),VP=sum(rows,"votersPhone");
   const withT=rows.filter(d=>d.targetEff),T=sum(withT,"targetEff"),ST=sum(withT,"sup");
   const P=planInfo(), expT=Math.ceil(P.expected*T), gapT=withT.reduce((a,d)=>a+(d.gap||0),0), perT=withT.reduce((a,d)=>a+(d.perDay||0),0), ratioT=P.expected>0&&T?(ST/T)/P.expected:null;
-  const gT= ratioT==null?null: ratioT>=1?"A":ratioT>=GRADE_B?"B":"C";
+  const gT= ratioT==null?null: ratioT>GRADE_B?"A":ratioT>GRADE_C?"B":"C";
   $("tfoot").innerHTML=`<tr><td>المجموع</td><td>${gT?`<span class="grade ${gT}">${gT}</span>`:""}</td><td></td><td class="num">${fmt(V)}</td><td class="num">${pct(V?VP/V:0)}</td><td class="num">${fmt(S)}</td><td class="num">${HAS_PREV?sgn(sum(rows,"inc")):"—"}</td><td class="num">${fmt(SP)}</td><td class="num">${pct(S?SP/S:0,0)}</td><td class="num tgc">${T?fmt(T):"—"}</td><td class="num">${T?progPill(ST/T):"—"}</td><td class="num">${ratioT==null?"—":pct(ratioT,0)}</td><td class="num">${T?fmt(expT):"—"}</td><td class="num">${T?fmt(gapT):"—"}</td><td class="num">${T?fmt(perT):"—"}</td><td class="num">${T?fmt(sum(withT,"remaining")):"—"}</td><td class="num">${fmt(sum(rows,"lists"))}</td><td class="num">${pct(V?S/V:0,2)}</td><td class="num">${fmt(sum(rows,"hes"))}</td><td class="num">${fmt(sum(rows,"con"))}</td><td class="num">${fmt(sum(rows,"und"))}</td></tr>`;
 }
 
