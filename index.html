@@ -442,10 +442,10 @@ const keyOf = s => String(s||"").toUpperCase().replace(/[\s\-־–'"`׳״]/g,"")
 const BY_KEY = new Map();
 // أهداف الحملة لكل بلد (ملف الأهداف، عمود «هدف» الثاني). البلدات خارج هذه القائمة لا تظهر في اللوحة.
 const TARGETS = {
-  "أم الفحم":3500, "بسمة":1400, "معاليه عيرون":1500, "عرعرة":2500, "كفر قرع":5000,
-  "باقة الغربية":4500, "جت":1500, "جسر الزرقاء":1700, "قلنسوة":4000, "الطيبة":5000,
-  "الطيرة":5000, "جلجولية":3500, "كفر برا":1350, "كفر قاسم":9500, "بيت صفافا":800,
-  "اللد":3000, "الرملة":2600, "يافا":3000
+  "أم الفحم":4200, "بسمة":1600, "معاليه عيرون":1500, "عرعرة":2800, "كفر قرع":5200,
+  "باقة الغربية":5000, "جت":1850, "جسر الزرقاء":1900, "قلنسوة":3000, "الطيبة":5000,
+  "الطيرة":5000, "جلجولية":3600, "كفر برا":1500, "كفر قاسم":9500, "بيت صفافا":800,
+  "اللد":2700, "الرملة":2800, "يافا":2000
 };
 TOWNS.forEach(([en,he,ar,rg])=>{ BY_KEY.set(keyOf(en),[ar,rg,he]); BY_KEY.set(keyOf(he),[ar,rg,he]); BY_KEY.set(keyOf(ar),[ar,rg,he]); });
 
@@ -668,8 +668,8 @@ function renderRegions(rows){
 // ---------- التدريج حسب الخطة ----------
 const PLAN_DEFAULT={pct:60, due:"2026-10-12", start:"2026-10-01"};
 const PLAN={...PLAN_DEFAULT};
-const GRADE_C=0.25, GRADE_B=0.40;   // من المطلوب اليوم: ≤25% = C · حتى 40% = B · أكثر من 40% = A
-const GRADES={A:{t:"جيد",d:"أكثر من 40% مما يجب اليوم"},B:{t:"متوسط",d:"من 25% إلى 40% مما يجب اليوم"},C:{t:"خطر",d:"25% أو أقل مما يجب اليوم"}};
+const GRADE_B=0.60;   // من المطلوب اليوم: ≥100% = A · من 60% إلى أقل من 100% = B · أقل من 60% = C
+const GRADES={A:{t:"على الخطة",d:"وصل 100% أو أكثر مما يجب اليوم"},B:{t:"متأخر قليلًا",d:"بين 60% و100% مما يجب اليوم"},C:{t:"خطر",d:"أقل من 60% مما يجب اليوم"}};
 const dayMs=864e5;
 const parseD = s => { const [y,m,d]=String(s).split("-").map(Number); return new Date(y,(m||1)-1,d||1); };
 const fmtD = dt => `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}`;
@@ -685,18 +685,23 @@ function planInfo(){
 function applyPlan(){
   const P=planInfo();
   DATA.forEach(d=>{
-    if(!d.targetEff){ d.grade=null; d.expPct=null; d.expSup=null; d.gap=null; d.paceRatio=null; d.perDay=null; return; }
+    if(!d.targetEff){ d.grade=null; d.expPct=null; d.expSup=null; d.gap=null; d.paceRatio=null; d.perDay=null; d.milestone=null; d.toMilestone=null; return; }
     d.expPct=P.expected; d.expSup=Math.ceil(P.expected*d.targetEff);
     d.gap=Math.max(0,d.expSup-d.sup);
     d.paceRatio = P.expected>0 ? d.progress/P.expected : Infinity;
-    d.grade = d.paceRatio>GRADE_B ? "A" : d.paceRatio>GRADE_C ? "B" : "C";
-    const toMilestone=Math.max(0,Math.ceil(P.milestone*d.targetEff)-d.sup);
-    d.perDay = P.daysLeft>0 ? Math.ceil(toMilestone/P.daysLeft) : (toMilestone?toMilestone:0);
+    d.grade = d.paceRatio>=1 ? "A" : d.paceRatio>=GRADE_B ? "B" : "C";
+    // نفس معادلات المركز: هدف المرحلة = الهدف × 60% · المتبقي = هدف المرحلة − المُنجَز · المعدل اليومي = المتبقي ÷ الأيام المتبقية
+    d.milestone=Math.round(P.milestone*d.targetEff);
+    d.toMilestone=d.milestone-d.sup;
+    d.perDay = P.daysLeft>0 ? Math.max(0,Math.round(d.toMilestone/P.daysLeft)) : Math.max(0,d.toMilestone);
     d.gradeRank = {A:0,B:1,C:2}[d.grade];
   });
   return P;
 }
 function renderPlan(rows,P){
+  const thM=document.querySelector('#thead th[data-k="milestone"]'), thR=document.querySelector('#thead th[data-k="toMilestone"]');
+  if(thM) thM.textContent=`هدف ${fmtD(P.due)} (${PLAN.pct}%)`;
+  if(thR) thR.textContent=`المتبقي لهدف ${fmtD(P.due)}`;
   $("planToday").innerHTML=`اليوم <b>${fmtD(P.today)}</b> · المطلوب اليوم <b>${pct(P.expected,1)}</b> من الهدف`;
   $("planNote").textContent=`${PLAN.pct}% من الهدف حتى ${fmtD(P.due)} · ${P.daysLeft>0?`بقي ${P.daysLeft} ${P.daysLeft===1?"يوم":P.daysLeft===2?"يومان":P.daysLeft<=10?"أيام":"يومًا"}`:"انتهت المرحلة"}`;
   // timeline
@@ -750,7 +755,9 @@ const COLS=[
   {k:"paceRatio",t:"من المطلوب اليوم",cls:"gr"},
   {k:"expSup",t:"المطلوب اليوم",cls:"gr"},
   {k:"gap",t:"الفجوة عن الخطة",cls:"gr"},
-  {k:"perDay",t:"المطلوب يوميًا حتى الموعد",cls:"gr"},
+  {k:"milestone",t:"هدف المرحلة",cls:"gr"},
+  {k:"toMilestone",t:"المتبقي لهدف المرحلة",cls:"gr"},
+  {k:"perDay",t:"المعدل اليومي لبلوغ الهدف",cls:"gr"},
   {k:"remaining",t:"المتبقي للهدف"},
   {k:"lists",t:"اللوائح المبنية"},
   {k:"rate",t:"نسبة التأييد"},
@@ -789,7 +796,9 @@ function renderTable(rows){
     <td class="num">${paceCell(d)}</td>
     <td class="num">${d.expSup==null?'<span class="muted">—</span>':fmt(d.expSup)}</td>
     <td class="num">${d.gap==null?'<span class="muted">—</span>':d.gap?`<strong style="color:var(--g${d.grade})">${fmt(d.gap)}</strong>`:'<span style="color:var(--gA)">✓</span>'}</td>
-    <td class="num">${d.perDay==null?'<span class="muted">—</span>':fmt(d.perDay)}</td>
+    <td class="num">${d.milestone==null?'<span class="muted">—</span>':fmt(d.milestone)}</td>
+    <td class="num">${d.toMilestone==null?'<span class="muted">—</span>':d.toMilestone<=0?`<span style="color:var(--gA)">✓ <span dir="ltr">${fmt(d.toMilestone)}</span></span>`:fmt(d.toMilestone)}</td>
+    <td class="num"><strong>${d.perDay==null?'<span class="muted">—</span>':fmt(d.perDay)}</strong></td>
     <td class="num">${d.remaining==null?'<span class="muted">—</span>':fmt(d.remaining)}</td>
     <td class="num">${d.lists?fmt(d.lists):'<span class="muted">0</span>'}</td>
     <td class="num">${miniRate(d.rate,maxRate,2)}</td>
@@ -801,8 +810,8 @@ function renderTable(rows){
   const V=sum(rows,"voters"),S=sum(rows,"sup"),SP=sum(rows,"supPhone"),VP=sum(rows,"votersPhone");
   const withT=rows.filter(d=>d.targetEff),T=sum(withT,"targetEff"),ST=sum(withT,"sup");
   const P=planInfo(), expT=Math.ceil(P.expected*T), gapT=withT.reduce((a,d)=>a+(d.gap||0),0), perT=withT.reduce((a,d)=>a+(d.perDay||0),0), ratioT=P.expected>0&&T?(ST/T)/P.expected:null;
-  const gT= ratioT==null?null: ratioT>GRADE_B?"A":ratioT>GRADE_C?"B":"C";
-  $("tfoot").innerHTML=`<tr><td>المجموع</td><td>${gT?`<span class="grade ${gT}">${gT}</span>`:""}</td><td></td><td class="num">${fmt(V)}</td><td class="num">${pct(V?VP/V:0)}</td><td class="num">${fmt(S)}</td><td class="num">${HAS_PREV?sgn(sum(rows,"inc")):"—"}</td><td class="num">${fmt(SP)}</td><td class="num">${pct(S?SP/S:0,0)}</td><td class="num tgc">${T?fmt(T):"—"}</td><td class="num">${T?progPill(ST/T):"—"}</td><td class="num">${ratioT==null?"—":pct(ratioT,0)}</td><td class="num">${T?fmt(expT):"—"}</td><td class="num">${T?fmt(gapT):"—"}</td><td class="num">${T?fmt(perT):"—"}</td><td class="num">${T?fmt(sum(withT,"remaining")):"—"}</td><td class="num">${fmt(sum(rows,"lists"))}</td><td class="num">${pct(V?S/V:0,2)}</td><td class="num">${fmt(sum(rows,"hes"))}</td><td class="num">${fmt(sum(rows,"con"))}</td><td class="num">${fmt(sum(rows,"und"))}</td></tr>`;
+  const gT= ratioT==null?null: ratioT>=1?"A":ratioT>=GRADE_B?"B":"C";
+  $("tfoot").innerHTML=`<tr><td>المجموع</td><td>${gT?`<span class="grade ${gT}">${gT}</span>`:""}</td><td></td><td class="num">${fmt(V)}</td><td class="num">${pct(V?VP/V:0)}</td><td class="num">${fmt(S)}</td><td class="num">${HAS_PREV?sgn(sum(rows,"inc")):"—"}</td><td class="num">${fmt(SP)}</td><td class="num">${pct(S?SP/S:0,0)}</td><td class="num tgc">${T?fmt(T):"—"}</td><td class="num">${T?progPill(ST/T):"—"}</td><td class="num">${ratioT==null?"—":pct(ratioT,0)}</td><td class="num">${T?fmt(expT):"—"}</td><td class="num">${T?fmt(gapT):"—"}</td><td class="num">${T?fmt(sum(withT,"milestone")):"—"}</td><td class="num">${T?fmt(withT.reduce((a,d)=>a+Math.max(0,d.toMilestone),0)):"—"}</td><td class="num">${T?fmt(perT):"—"}</td><td class="num">${T?fmt(sum(withT,"remaining")):"—"}</td><td class="num">${fmt(sum(rows,"lists"))}</td><td class="num">${pct(V?S/V:0,2)}</td><td class="num">${fmt(sum(rows,"hes"))}</td><td class="num">${fmt(sum(rows,"con"))}</td><td class="num">${fmt(sum(rows,"und"))}</td></tr>`;
 }
 
 // ---------- اختيار الأعمدة ----------
