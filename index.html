@@ -452,27 +452,27 @@ TOWNS.forEach(([en,he,ar,rg])=>{ BY_KEY.set(keyOf(en),[ar,rg,he]); BY_KEY.set(ke
 // البيانات الأصلية — من ملف «لوحة المؤيدين» (تحديث 28/09/2026)
 // الحقول: البلد، الناخبون، ناخبون مع رقم، المؤيدون، مؤيدون مع رقم، الهدف، اللوائح، معارض، متردد، غير محدد، المؤيدون في التحديث السابق
 const ORIGINAL_ROWS = [
-  ["KAFAR QASEM",18243,5695,3143,1316,null,272,68,56,14976,3120],
-  ["TIRE",20878,4807,2970,2455,null,40,14,27,17867,1839],
-  ["KAFAR BARA",2860,519,1643,399,null,1,3,1214,0,1448],
-  ["KAFAR QARA",15145,739,1050,193,null,35,0,4,14091,777],
-  ["UMM AL-FAHM",42238,2537,501,270,null,12,32,57,41648,494],
+  ["KAFAR QASEM",18243,5695,3324,1373,null,274,68,60,14791,3143],
+  ["TIRE",20878,4807,2970,2455,null,40,14,27,17867,2970],
+  ["KAFAR BARA",2860,519,1643,399,null,1,3,1214,0,1643],
+  ["KAFAR QARA",15145,743,1088,199,null,37,0,4,14053,1050],
+  ["UMM AL-FAHM",42238,2537,501,270,null,12,32,57,41648,501],
   ["JERUSALEM",705844,845,471,153,null,0,438,421,704514,471],
-  ["TAYIBE",33570,564,411,167,null,1,32,39,33088,365],
-  ["JATT",9485,226,348,116,null,1,10,23,9104,343],
+  ["TAYIBE",33570,564,429,167,null,1,32,39,33070,411],
+  ["JATT",9485,227,348,117,null,1,10,23,9104,348],
   ["TEL AVIV - YAFO",473868,402,313,98,null,0,285,276,472994,313],
   ["JISR AZ-ZARQA",10382,1630,312,90,null,0,16,10,10044,312],
-  ["LOD",64239,292,204,45,null,16,37,43,63955,125],
-  ["QALANSAWE",16919,515,155,65,null,10,11,27,16726,151],
-  ["BAQA AL-GHARBIYYE",22611,1770,120,82,null,3,14,27,22450,119],
-  ["MA'ALE IRON",11512,1300,101,60,null,5,5,15,11391,85],
+  ["LOD",64239,292,204,45,null,16,37,43,63955,204],
+  ["QALANSAWE",16919,515,155,65,null,10,11,27,16726,155],
+  ["BAQA AL-GHARBIYYE",22611,1770,148,85,null,3,14,27,22422,120],
+  ["MA'ALE IRON",11512,1300,101,60,null,5,5,15,11391,101],
   ["JALJULYE",7567,1958,95,56,null,45,5,8,7459,95],
   ["RAMLA",61713,1319,91,51,null,0,31,47,61544,91],
   ["AR'ARA",15493,595,66,28,null,7,11,19,15397,66],
   ["BASMA",8071,108,28,20,null,0,10,6,8027,28]
 ].map(r=>{ const [ar,rg,he]=BY_KEY.get(keyOf(r[0]));
   return {name:ar,he,region:rg,voters:r[1],votersPhone:r[2],sup:r[3],supPhone:r[4],target:r[5]??TARGETS[ar]??null,lists:r[6],con:r[7],hes:r[8],und:r[9],prev:r[10]}; });
-const ORIGINAL_SRC = "المصدر: aswatkom.com — تحديث 07/10/2026 20:24";
+const ORIGINAL_SRC = "المصدر: aswatkom.com — تحديث 07/10/2026 22:31";
 
 const nf = new Intl.NumberFormat("ar-u-nu-latn");
 const fmt = n => n==null ? "—" : nf.format(Math.round(n));
@@ -924,8 +924,8 @@ function loadData(rows, srcText, isOriginal, persist){
   $("sub").textContent=`المؤيدون وأرقام الهواتف واللوائح والأهداف في ${fmt(DATA.length)} ${DATA.length===1?"بلد":"بلدًا"}، مع فلاتر حسب المنطقة وحجم البلد.`;
   $("restore").hidden=isOriginal;
   buildChips(); render();
-  if(persist) ls.set("aswatkom-upload-v7",{rows,src:srcText});
-  if(isOriginal) ls.del("aswatkom-upload-v7");
+  if(persist) ls.set("aswatkom-upload-v8",{rows,src:srcText});
+  if(isOriginal) ls.del("aswatkom-upload-v8");
 }
 
 function handleFile(file){
@@ -1011,7 +1011,7 @@ up.addEventListener("drop",e=>handleFile(e.dataTransfer.files[0]));
 $("restore").addEventListener("click",()=>{ loadData(ORIGINAL_ROWS, ORIGINAL_SRC, true, false); setMsg("<b>رجعت البيانات الأصلية.</b>","ok"); });
 
 ls.del("aswatkom-upload"); // نسخة قديمة بشكل مختلف
-const saved=ls.get("aswatkom-upload-v7");
+const saved=ls.get("aswatkom-upload-v8");
 if(saved && Array.isArray(saved.rows) && saved.rows.length){ loadData(saved.rows, saved.src, false, false); setMsg("<b>معروضة آخر بيانات رفعتها على هذا الجهاز.</b>","ok"); }
 else loadData(ORIGINAL_ROWS, ORIGINAL_SRC, true, false);
 </script>
