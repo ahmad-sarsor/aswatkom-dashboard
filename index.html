@@ -431,12 +431,15 @@ const TOWNS = [
   ["SAKHNIN","סח'נין","سخنين","other"],["SHEFAR'AM","שפרעם","شفاعمرو","other"],["TAMRA","טמרה","طمرة","other"],
   ["RAHAT","רהט","رهط","misc"],["KAFAR KANNA","כפר כנא","كفر كنا","other"],["ARRABE","עראבה","عرابة","other"],
   ["MAJD AL-KURUM","מג'ד אל-כרום","مجد الكروم","other"],["NOF HAGALIL","נוף הגליל","نوف هجليل","mixed"],
-  ["ZEMER","זמר","زيمر","south"],["KAFAR YASIF","כפר יאסיף","كفر ياسيف","other"],["DEIR HANNA","דייר חנא","دير حنا","other"],
+  ["ZEMER","זמר","زيمر","north"],["KAFAR YASIF","כפר יאסיף","كفر ياسيف","other"],["DEIR HANNA","דייר חנא","دير حنا","other"],
   ["IKSAL","אכסאל","إكسال","other"],["REINE","ריינה","الرينة","other"],["YAFI","יפיע","يافة الناصرة","other"],
   ["MUGHAR","מגאר","المغار","other"],["TUR'AN","טורעאן","طرعان","other"],["KAFAR MANDA","כפר מנדא","كفر مندا","other"],
   ["BU'EINE-NUJEIDAT","בועיינה-נוג'ידאת","البعينة - نجيدات","other"],
   ["BE'ER SHEVA","באר שבע","بئر السبع","misc"],["NETANYA","נתניה","نتانيا","misc"],["KAFAR SAVA","כפר סבא","كفار سابا","misc"],
-  ["PETAH TIKVA","פתח תקווה","بيتح تكفا","misc"],["ROSH HAAYIN","ראש העין","روش هعاين","misc"],["HADERA","חדרה","الخضيرة","misc"]
+  ["PETAH TIKVA","פתח תקווה","بيتح تكفا","misc"],["ROSH HAAYIN","ראש העין","روش هعاين","misc"],["HADERA","חדרה","الخضيرة","misc"],
+  ["ABU GHOSH","אבו גוש","أبو غوش","jer"],["EIN RAFA","עין ראפה","عين رافا","jer"],["BEIT NEKOFA","בית נקופה","بيت نقوبا","jer"],
+  ["FUREIDIS","פוריידיס","الفريديس","coast"],["MEISER","מייסר","ميسر","north"],["UMM AL-QUTUF","אום אל-קוטוף","أم القطف","north"],
+  ["AL-ARYAN","אל -עריאן","العريان","north"]
 ];
 const keyOf = s => String(s||"").toUpperCase().replace(/[\s\-־–'"`׳״]/g,"");
 const BY_KEY = new Map();
@@ -445,34 +448,43 @@ const TARGETS = {
   "أم الفحم":4200, "بسمة":1600, "معاليه عيرون":1500, "عرعرة":2800, "كفر قرع":5200,
   "باقة الغربية":5000, "جت":1850, "جسر الزرقاء":1900, "قلنسوة":3000, "الطيبة":5000,
   "الطيرة":5000, "جلجولية":3600, "كفر برا":1500, "كفر قاسم":9500, "بيت صفافا":800,
-  "اللد":2700, "الرملة":2800, "يافا":2000
+  "اللد":2700, "الرملة":2800, "يافا":2000,
+  "زيمر":1200, "أم القطف":250, "ميسر":250, "العريان":60, "الفريديس":1850,
+  "أبو غوش":1400, "عين رافا":250, "بيت نقوبا":350
 };
 TOWNS.forEach(([en,he,ar,rg])=>{ BY_KEY.set(keyOf(en),[ar,rg,he]); BY_KEY.set(keyOf(he),[ar,rg,he]); BY_KEY.set(keyOf(ar),[ar,rg,he]); });
 
 // البيانات الأصلية — من ملف «لوحة المؤيدين» (تحديث 28/09/2026)
 // الحقول: البلد، الناخبون، ناخبون مع رقم، المؤيدون، مؤيدون مع رقم، الهدف، اللوائح، معارض، متردد، غير محدد، المؤيدون في التحديث السابق
 const ORIGINAL_ROWS = [
-  ["KAFAR QASEM",18243,5695,3324,1373,null,274,68,60,14791,3143],
-  ["TIRE",20878,4807,2970,2455,null,40,14,27,17867,2970],
+  ["KAFAR QASEM",18243,5695,3455,1422,null,259,69,72,14647,3324],
+  ["TIRE",20878,4807,3090,2469,null,40,14,27,17747,2970],
   ["KAFAR BARA",2860,519,1643,399,null,1,3,1214,0,1643],
-  ["KAFAR QARA",15145,743,1088,199,null,37,0,4,14053,1050],
-  ["UMM AL-FAHM",42238,2537,501,270,null,12,32,57,41648,501],
+  ["KAFAR QARA",15145,749,1344,232,null,41,0,4,13797,1088],
+  ["JISR AZ-ZARQA",10382,1632,551,134,null,16,23,15,9793,312],
+  ["JALJULYE",7567,1958,528,243,null,49,5,8,7026,95],
+  ["ABU GHOSH",5561,89,511,33,null,2,11,4,5035,null],
+  ["UMM AL-FAHM",42238,2537,508,270,null,12,32,57,41641,501],
+  ["TAYIBE",33570,572,499,176,null,2,33,40,32998,429],
+  ["FUREIDIS",9909,181,487,83,null,9,16,42,9364,null],
   ["JERUSALEM",705844,845,471,153,null,0,438,421,704514,471],
-  ["TAYIBE",33570,564,429,167,null,1,32,39,33070,411],
-  ["JATT",9485,227,348,117,null,1,10,23,9104,348],
+  ["QALANSAWE",16919,543,359,100,null,14,18,20,16522,155],
+  ["JATT",9485,229,349,118,null,3,10,24,9102,348],
   ["TEL AVIV - YAFO",473868,402,313,98,null,0,285,276,472994,313],
-  ["JISR AZ-ZARQA",10382,1630,312,90,null,0,16,10,10044,312],
-  ["LOD",64239,292,204,45,null,16,37,43,63955,204],
-  ["QALANSAWE",16919,515,155,65,null,10,11,27,16726,155],
-  ["BAQA AL-GHARBIYYE",22611,1770,148,85,null,3,14,27,22422,120],
-  ["MA'ALE IRON",11512,1300,101,60,null,5,5,15,11391,101],
-  ["JALJULYE",7567,1958,95,56,null,45,5,8,7459,95],
-  ["RAMLA",61713,1319,91,51,null,0,31,47,61544,91],
-  ["AR'ARA",15493,595,66,28,null,7,11,19,15397,66],
-  ["BASMA",8071,108,28,20,null,0,10,6,8027,28]
+  ["LOD",64239,292,277,45,null,15,37,43,63882,204],
+  ["BAQA AL-GHARBIYYE",22611,1771,149,86,null,3,14,27,22421,148],
+  ["MA'ALE IRON",11512,1302,103,62,null,5,5,15,11389,101],
+  ["RAMLA",61713,1326,91,51,null,3,31,47,61544,91],
+  ["AR'ARA",15493,595,67,28,null,15,11,19,15396,66],
+  ["BASMA",8071,108,42,23,null,0,9,6,8014,28],
+  ["ZEMER",5545,79,32,17,null,0,3,7,5503,null],
+  ["MEISER",1511,22,5,4,null,0,1,3,1502,null],
+  ["EIN RAFA",836,12,4,3,null,0,0,1,831,null],
+  ["UMM AL-QUTUF",867,19,3,2,null,0,0,0,864,null],
+  ["AL-ARYAN",140,2,0,0,null,0,0,0,140,null]
 ].map(r=>{ const [ar,rg,he]=BY_KEY.get(keyOf(r[0]));
   return {name:ar,he,region:rg,voters:r[1],votersPhone:r[2],sup:r[3],supPhone:r[4],target:r[5]??TARGETS[ar]??null,lists:r[6],con:r[7],hes:r[8],und:r[9],prev:r[10]}; });
-const ORIGINAL_SRC = "المصدر: aswatkom.com — تحديث 07/10/2026 22:31";
+const ORIGINAL_SRC = "المصدر: aswatkom.com — تحديث 10/10/2026 12:51";
 
 const nf = new Intl.NumberFormat("ar-u-nu-latn");
 const fmt = n => n==null ? "—" : nf.format(Math.round(n));
@@ -924,8 +936,8 @@ function loadData(rows, srcText, isOriginal, persist){
   $("sub").textContent=`المؤيدون وأرقام الهواتف واللوائح والأهداف في ${fmt(DATA.length)} ${DATA.length===1?"بلد":"بلدًا"}، مع فلاتر حسب المنطقة وحجم البلد.`;
   $("restore").hidden=isOriginal;
   buildChips(); render();
-  if(persist) ls.set("aswatkom-upload-v8",{rows,src:srcText});
-  if(isOriginal) ls.del("aswatkom-upload-v8");
+  if(persist) ls.set("aswatkom-upload-v9",{rows,src:srcText});
+  if(isOriginal) ls.del("aswatkom-upload-v9");
 }
 
 function handleFile(file){
@@ -1011,7 +1023,7 @@ up.addEventListener("drop",e=>handleFile(e.dataTransfer.files[0]));
 $("restore").addEventListener("click",()=>{ loadData(ORIGINAL_ROWS, ORIGINAL_SRC, true, false); setMsg("<b>رجعت البيانات الأصلية.</b>","ok"); });
 
 ls.del("aswatkom-upload"); // نسخة قديمة بشكل مختلف
-const saved=ls.get("aswatkom-upload-v8");
+const saved=ls.get("aswatkom-upload-v9");
 if(saved && Array.isArray(saved.rows) && saved.rows.length){ loadData(saved.rows, saved.src, false, false); setMsg("<b>معروضة آخر بيانات رفعتها على هذا الجهاز.</b>","ok"); }
 else loadData(ORIGINAL_ROWS, ORIGINAL_SRC, true, false);
 </script>
